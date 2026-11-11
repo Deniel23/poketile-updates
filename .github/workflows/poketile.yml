@@ -1,3 +1,4 @@
+
 name: PokéTile updates
 
 on:
@@ -6,17 +7,21 @@ on:
   workflow_dispatch:
 
 permissions:
+  contents: write
+
 concurrency:
   group: poketile-check
   cancel-in-progress: false
-  contents: write
 
 jobs:
   check:
     runs-on: ubuntu-latest
+
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Preparar Python
         uses: actions/setup-python@v5
@@ -34,15 +39,14 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python check_poketile.py
 
-        - name: Guardar versión comprobada
+      - name: Guardar versión comprobada
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
           git add state.json
-          if git diff --cached --quiet; then
-            echo "Sin cambios en state.json"
-            exit 0
-          fi
+          git diff --cached --quiet && exit 0
           git commit -m "Actualizar versión comprobada de PokéTile"
-          git pull --rebase origin main
-          git push origin main
+          git rebase origin/main
+          git push origin HEAD:main
+
