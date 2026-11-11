@@ -6,6 +6,9 @@ on:
   workflow_dispatch:
 
 permissions:
+concurrency:
+  group: poketile-check
+  cancel-in-progress: false
   contents: write
 
 jobs:
